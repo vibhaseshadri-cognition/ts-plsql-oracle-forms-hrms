@@ -2,13 +2,13 @@
 
 ## Executive Summary
 
-This report catalogs **35 identified technical debt items** across the Oracle Forms/PL/SQL HRMS application, including 10 security vulnerabilities, 2 race conditions, 6 performance issues, 4 validation drift items, 1 circular dependency, 5 architectural anti-patterns, and 7 data integrity risks.
+This report catalogs **36 identified technical debt items** across the Oracle Forms/PL/SQL HRMS application, including 10 security vulnerabilities, 2 race conditions, 6 performance issues, 4 validation drift items, 1 circular dependency, 6 architectural anti-patterns, and 7 data integrity risks.
 
 | Severity | Count | Categories |
 |----------|-------|------------|
-| CRITICAL | 6 | Security (MD5, hard-coded key, cleartext transmission) |
+| CRITICAL | 7 | Security (MD5, hard-coded key, cleartext transmission), trigger column mismatch |
 | HIGH | 10 | Race conditions, timing attack, no lockout, validation drift |
-| MEDIUM | 12 | Performance, architectural anti-patterns, stale data |
+| MEDIUM | 13 | Performance, architectural anti-patterns, stale data |
 | LOW | 6 | Configuration, incomplete implementations |
 
 ---
@@ -345,6 +345,22 @@ RETURN REGEXP_LIKE(p_email, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 
 ## 6. Architectural Anti-Patterns
 
+### ARCH-00: TRG_EMP_BEFORE_UPDATE Column Mismatch — Runtime ORA-00904 (CRITICAL)
+
+**File**: `plsql/triggers/trg_employees.sql:78-85`
+```sql
+INSERT INTO EMPLOYEE_HISTORY (
+    HISTORY_ID, EMP_ID, CHANGE_TYPE, CHANGE_DATE,
+    OLD_VALUE, NEW_VALUE, CHANGED_BY, CHANGE_REASON
+) VALUES (...)
+```
+
+**Issue**: The trigger inserts into EMPLOYEE_HISTORY using column names (`HISTORY_ID`, `CHANGE_DATE`, `OLD_VALUE`, `NEW_VALUE`, `CHANGED_BY`, `CHANGE_REASON`) that do not exist in the actual table definition (`schema/tables/01_core_tables.sql:152-177`). The real columns are `HIST_ID`, `EFFECTIVE_DATE`, `OLD_DEPT_ID/NEW_DEPT_ID/...`, `CREATED_BY`, `CREATED_DATE`. This will fail at runtime with ORA-00904 (invalid identifier) any time an employee status or department change is made.
+**Impact**: Employee status changes and department transfers silently fail (or raise unhandled errors), meaning EMPLOYEE_HISTORY is never populated by this trigger path.
+**Recommendation**: Rewrite trigger INSERTs to use the correct column names from the EMPLOYEE_HISTORY DDL. Consider whether the generic `OLD_VALUE/NEW_VALUE` pattern should be replaced with the structured column approach (OLD_DEPT_ID/NEW_DEPT_ID, OLD_SALARY/NEW_SALARY, etc.).
+
+---
+
 ### ARCH-01: Soft-Delete Trigger Confusion (MEDIUM)
 
 **File**: `plsql/triggers/trg_employees.sql:120-130`
@@ -514,6 +530,7 @@ AND CALENDAR_YEAR = EXTRACT(YEAR FROM p_start_date);
 | DRIFT-03 | Validation Drift | Triple-layer redundancy | MEDIUM | Multiple files | Single source of truth |
 | DRIFT-04 | Validation Drift | Date validation differences | LOW | Multiple files | Align client/server |
 | CIRC-01 | Circular Dep | PKG_EMPLOYEE ↔ PKG_PAYROLL | HIGH | PKG_EMPLOYEE.pkb:9 | Extract shared package |
+| ARCH-00 | Architecture | TRG_EMP_BEFORE_UPDATE column mismatch (ORA-00904) | CRITICAL | trg_employees.sql:78 | Rewrite INSERTs with correct columns |
 | ARCH-01 | Architecture | Soft-delete trigger confusion | MEDIUM | trg_employees.sql:120 | Remove or use INSTEAD OF view |
 | ARCH-02 | Architecture | Autonomous transaction overuse | MEDIUM | PKG_AUDIT.pkb:14 | Savepoints |
 | ARCH-03 | Architecture | UTL_FILE flat file integration | MEDIUM | PKG_INTEGRATION.pkb | REST API / message queue |

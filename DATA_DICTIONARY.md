@@ -478,7 +478,7 @@ Leave type definitions with accrual rules.
 | ACCRUAL_FREQUENCY | VARCHAR2(20) | CHECK | MONTHLY/BIWEEKLY/ANNUAL/NULL |
 | MAX_BALANCE | NUMBER(6,2) | | Maximum accrual cap |
 | CARRYOVER_MAX | NUMBER(6,2) | | Max carryover to next year |
-| CARRYOVER_EXPIRY | NUMBER(3) | | Days until carryover expires |
+| CARRYOVER_EXPIRY | NUMBER(3) | | Months until carryover expires (used with ADD_MONTHS in PKG_LEAVE) |
 | MIN_TENURE_DAYS | NUMBER(5) | DEFAULT 0 | Minimum tenure to be eligible |
 | REQUIRES_APPROVAL | CHAR(1) | DEFAULT 'Y' | Requires manager approval |
 | REQUIRES_DOCUMENT | CHAR(1) | DEFAULT 'N' | Requires supporting document |
