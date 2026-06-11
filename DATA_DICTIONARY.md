@@ -223,11 +223,12 @@ Employee emergency contact information.
 | CONTACT_ID | NUMBER(10) | PK, NOT NULL | Surrogate key |
 | EMP_ID | NUMBER(10) | FK → EMPLOYEES, NOT NULL | Employee reference |
 | CONTACT_NAME | VARCHAR2(100) | NOT NULL | Contact full name |
-| RELATIONSHIP | VARCHAR2(20) | NOT NULL | Relationship to employee |
+| RELATIONSHIP | VARCHAR2(30) | | Relationship to employee |
 | PHONE_PRIMARY | VARCHAR2(30) | NOT NULL | Primary phone |
 | PHONE_SECONDARY | VARCHAR2(30) | | Secondary phone |
 | EMAIL | VARCHAR2(100) | | Email address |
-| IS_PRIMARY | CHAR(1) | DEFAULT 'N' | Primary contact flag |
+| PRIORITY_ORDER | NUMBER(2) | DEFAULT 1 | Contact priority ordering |
+| ACTIVE_FLAG | CHAR(1) | NOT NULL, DEFAULT 'Y' | Soft-delete flag |
 | CREATED_BY | VARCHAR2(30) | NOT NULL | Audit |
 | CREATED_DATE | DATE | NOT NULL, DEFAULT SYSDATE | Audit |
 | MODIFIED_BY | VARCHAR2(30) | | Audit |

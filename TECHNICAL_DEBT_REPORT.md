@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This report catalogs **34 identified technical debt items** across the Oracle Forms/PL/SQL HRMS application, including 10 security vulnerabilities, 2 race conditions, 6 performance issues, 4 validation drift items, 1 circular dependency, 5 architectural anti-patterns, and 6 data integrity risks.
+This report catalogs **35 identified technical debt items** across the Oracle Forms/PL/SQL HRMS application, including 10 security vulnerabilities, 2 race conditions, 6 performance issues, 4 validation drift items, 1 circular dependency, 5 architectural anti-patterns, and 7 data integrity risks.
 
 | Severity | Count | Categories |
 |----------|-------|------------|
@@ -477,6 +477,16 @@ AND CALENDAR_YEAR = EXTRACT(YEAR FROM p_start_date);
 
 ---
 
+### DATA-07: VW_LEAVE_SUMMARY AVAILABLE Omits PENDING (MEDIUM)
+
+**Files**: `schema/views/hrms_views.sql:96` vs `schema/tables/03_leave_tables.sql:47`
+
+**Issue**: The `LEAVE_BALANCES.AVAILABLE` virtual column is defined as `OPENING_BALANCE + ACCRUED - USED + ADJUSTMENT - PENDING`, but `VW_LEAVE_SUMMARY` computes AVAILABLE as `OPENING_BALANCE + ACCRUED - USED + ADJUSTMENT` — omitting `- PENDING`. Querying the table directly returns a different available balance than querying the view.
+**Impact**: Managers viewing leave summaries via the view see inflated available balances that include pending (unapproved) requests. Approval decisions may be made on incorrect availability.
+**Recommendation**: Align the view calculation to include `- PENDING`, matching the virtual column definition: `lb.OPENING_BALANCE + lb.ACCRUED - lb.USED + lb.ADJUSTMENT - lb.PENDING AS AVAILABLE`.
+
+---
+
 ## 8. Severity Summary
 
 | ID | Category | Description | Severity | File | Recommended Fix |
@@ -515,6 +525,7 @@ AND CALENDAR_YEAR = EXTRACT(YEAR FROM p_start_date);
 | DATA-04 | Data Integrity | Holiday observed date | MEDIUM | PKG_LEAVE.pkb:9 | Add OBSERVED_DATE |
 | DATA-05 | Data Integrity | YTD mid-year hire | LOW | PKG_PAYROLL.pks:12 | Init from prior W-2 |
 | DATA-06 | Data Integrity | Overtime holiday calc | LOW | PKG_PAYROLL.pks:11 | Integrate holiday calendar |
+| DATA-07 | Data Integrity | VW_LEAVE_SUMMARY AVAILABLE omits PENDING | MEDIUM | hrms_views.sql:96 | Add `- PENDING` to view |
 
 ---
 
