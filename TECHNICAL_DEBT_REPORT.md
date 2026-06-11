@@ -327,7 +327,7 @@ RETURN REGEXP_LIKE(p_email, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 ### CIRC-01: PKG_EMPLOYEE ↔ PKG_PAYROLL (HIGH)
 
 **Files**:
-- `plsql/packages/PKG_EMPLOYEE.pkb:9`: `"Circular dependency with PKG_PAYROLL (salary validation)"`
+- `plsql/packages/PKG_EMPLOYEE.pks:9`: `"Circular dependency with PKG_PAYROLL (salary validation)"`
 - `plsql/packages/PKG_PAYROLL.pks:9`: `"Circular dependency with PKG_EMPLOYEE (is_active check)"`
 
 **Dependency Chain**:
@@ -529,7 +529,7 @@ AND CALENDAR_YEAR = EXTRACT(YEAR FROM p_start_date);
 | DRIFT-02 | Validation Drift | Salary caching comment vs code | MEDIUM | HRMS_VALIDATION_LIB:62 | Fix comment or implement |
 | DRIFT-03 | Validation Drift | Triple-layer redundancy | MEDIUM | Multiple files | Single source of truth |
 | DRIFT-04 | Validation Drift | Date validation differences | LOW | Multiple files | Align client/server |
-| CIRC-01 | Circular Dep | PKG_EMPLOYEE ↔ PKG_PAYROLL | HIGH | PKG_EMPLOYEE.pkb:9 | Extract shared package |
+| CIRC-01 | Circular Dep | PKG_EMPLOYEE ↔ PKG_PAYROLL | HIGH | PKG_EMPLOYEE.pks:9 | Extract shared package |
 | ARCH-00 | Architecture | TRG_EMP_BEFORE_UPDATE column mismatch (ORA-00904) | CRITICAL | trg_employees.sql:78 | Rewrite INSERTs with correct columns |
 | ARCH-01 | Architecture | Soft-delete trigger confusion | MEDIUM | trg_employees.sql:120 | Remove or use INSTEAD OF view |
 | ARCH-02 | Architecture | Autonomous transaction overuse | MEDIUM | PKG_AUDIT.pkb:14 | Savepoints |
