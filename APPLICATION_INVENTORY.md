@@ -9,7 +9,7 @@
 | UI | Menu Modules | 1 |
 | Business Logic | PL/SQL Packages | 11 (22 files: .pks + .pkb) |
 | Data Access | Database Triggers | 6 (across 2 files) |
-| Data Access | Tables | 25 (across 4 files) |
+| Data Access | Tables | 30 (across 4 files) |
 | Data Access | Sequences | 29 |
 | Data Access | Views | 6 |
 
